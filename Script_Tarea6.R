@@ -34,31 +34,31 @@ archivosParaDescomprimir<-FALSE
 #Se inicia validando si los paquetes a utilizar se encuentran disponibles en la sesión, si no es así, se instalan y cargan
 for (package in PACKAGES ) {
   if (!require(package, character.only=T, quietly=T)) {
-     install.packages(package,wd, repos="https://cran.itam.mx/")
-     library(package,lib.loc=wd)
+     install.packages(package, repos="https://cran.itam.mx/")
+     library(package)
   }
   }
 
 #Validar si existe el directorio de trabajo
 if( !dir.exists(wd) ) {
-	#Se ha crea y establece el directorio de trabajo
-	dir.create(file.path(wd), recursive=TRUE) 
+  #Se ha crea y establece el directorio de trabajo
+  dir.create(file.path(wd), recursive=TRUE) 
     setwd(wd)
-  	
+    
   } else {
-  	#Si ya existe el directorio de trabajo, sólo se asigna para trabajar sobre él
-  	setwd(wd)
+    #Si ya existe el directorio de trabajo, sólo se asigna para trabajar sobre él
+    setwd(wd)
   }
 #Validar si existe la carpeta de descargas donde se guardarán los archivos comprimidos
 if( !dir.exists(Descargas) ) {
-	#Se crea la carpeta de descargas para archivos .gz
-	dir.create(file.path(Descargas), recursive=TRUE) 
+  #Se crea la carpeta de descargas para archivos .gz
+  dir.create(file.path(Descargas), recursive=TRUE) 
     
   } 
 #Validar si existe la carpeta de los archivos csv
 if( !dir.exists(Archivos) ) {
-	#Se crea la carpeta donde se guardaran los archivos descomprimidos .csv
-	dir.create(file.path(Archivos), recursive=TRUE) 
+  #Se crea la carpeta donde se guardaran los archivos descomprimidos .csv
+  dir.create(file.path(Archivos), recursive=TRUE) 
  } 
 
 #Se crea un vector con los nombres de los archivos
@@ -71,41 +71,41 @@ for( file in FILES ){
   setwd(Archivos)
    if( ! file.exists( file )) {
     # Si no existe se busca el archivo compactado en el área de descarga.
-    	#No existe en la carpeta de archivos
-    	#Buscando en descargas
-   		setwd(Descargas)
-   		fileExt <- paste(file,extension,sep="")#arc.gz
-   		if( ! file.exists( fileExt ) && !fileExt=="") {
-	    # Si no existe en ela carpeta de Descargas, se procede a descargar el archivo
-	   		fileLink <- paste(rutaDescarga,fileExt,sep="") 
-	   		rutaGunzip<-paste(Descargas,fileExt,sep="") 
-	   		rutaArchivoDescargado <- paste(Descargas,fileExt,sep="") 
-	   		 download.file(fileLink,rutaArchivoDescargado)
-	   		 #Al finalizar el ciclo se descomprimen todos los archivos descargados
-	   		 archivosParaDescomprimir<-TRUE
-	    } else {
-		   	 #Existe el archivo en la carpeta de descargas, solo se descomprime en 'Archivos'
-		   	 setwd(Descargas)
-		   	 rutaGunzip<-paste(Archivos,file,sep="")
-		   	 gunzip(fileExt,rutaGunzip,overwrite = FALSE)
-	   }
+      #No existe en la carpeta de archivos
+      #Buscando en descargas
+      setwd(Descargas)
+      fileExt <- paste(file,extension,sep="")#arc.gz
+      if( ! file.exists( fileExt ) && !fileExt=="") {
+      # Si no existe en ela carpeta de Descargas, se procede a descargar el archivo
+        fileLink <- paste(rutaDescarga,fileExt,sep="") 
+        rutaGunzip<-paste(Descargas,fileExt,sep="") 
+        rutaArchivoDescargado <- paste(Descargas,fileExt,sep="") 
+         download.file(fileLink,rutaArchivoDescargado)
+         #Al finalizar el ciclo se descomprimen todos los archivos descargados
+         archivosParaDescomprimir<-TRUE
+      } else {
+         #Existe el archivo en la carpeta de descargas, solo se descomprime en 'Archivos'
+         setwd(Descargas)
+         rutaGunzip<-paste(Archivos,file,sep="")
+         gunzip(fileExt,rutaGunzip,overwrite = FALSE)
+     }
    } 
 }
 
 if(archivosParaDescomprimir){
-	setwd(Descargas)
-	for( file in FILES ){
-		fileExt<- paste(file,extension,sep="")
-		rutaGunzip<-paste(Archivos,file,sep="")
-		gunzip(fileExt,rutaGunzip,overwrite = FALSE)
-	}
+  setwd(Descargas)
+  for( file in FILES ){
+    fileExt<- paste(file,extension,sep="")
+    rutaGunzip<-paste(Archivos,file,sep="")
+    gunzip(fileExt,rutaGunzip,overwrite = FALSE)
+  }
 }
 #Se empieza a trabajar con los datos obtenidos
 setwd(Archivos)
 #######################
 #A continuación se presenta la cantidad de registros por cada archivo:
 for( file in FILES ){
-	print(nrow(read.csv(file, header = TRUE, sep = ",")))
+  print(nrow(read.csv(file, header = TRUE, sep = ",")))
 }
 #######################
 
