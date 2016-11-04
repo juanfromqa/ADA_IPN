@@ -1,10 +1,16 @@
 system("defaults write org.R-project.R force.LANG en_US.UTF-8")
+
 #Para MAC: /Users/DirectorioDeTrabajo
 #Para Windows: C:/Users/juan.hernandez/DirectorioDeTrabajo
+
+packUtils<-"utils"
+packRutils<-"R.utils"
+
 #Declaración de constantes
+PACKAGES<-c(packUtils,packRutils)
 wd <- "C:/Users/juan.hernandez/DirectorioDeTrabajo"
-Descargas <- "C:/Users/juan.hernandez/DirectorioDeTrabajo/Descargas"
-Archivos <- "C:/Users/juan.hernandez/DirectorioDeTrabajo/Archivos"
+Descargas <- "C:/Users/juan.hernandez/DirectorioDeTrabajo/Descargas/"
+Archivos <- "C:/Users/juan.hernandez/DirectorioDeTrabajo/Archivos/"
 extension=".gz"
 rutaDescarga="http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/"
 file1="StormEvents_fatalities-ftp_v1.0_d1985_c20160223.csv"
@@ -18,34 +24,44 @@ file8="StormEvents_fatalities-ftp_v1.0_d1992_c20160223.csv"
 file9="StormEvents_fatalities-ftp_v1.0_d1993_c20160223.csv"
 file10="StormEvents_fatalities-ftp_v1.0_d1994_c20160223.csv"
 fileExt <- ""
+rutaGunzip <- "" 
+archivosParaDescomprimir<-FALSE
+
+#Se inicia validando si los paquetes a utilizar se encuentran disponibles en la sesión, si no es así, se instalan y cargan
+for (package in PACKAGES ) {
+  if (!require(package, character.only=T, quietly=T)) {
+     install.packages(package,wd, repos="https://cran.itam.mx/")
+     library(package,lib.loc=wd)
+  }
+  }
 
 #Validar si existe el directorio de trabajo
 if( !dir.exists(wd) ) {
+	#Se ha crea y establece el directorio de trabajo
 	dir.create(file.path(wd), recursive=TRUE) 
     setwd(wd)
-  	print("Se ha creado y establecido el directorio de trabajo correctamente.")
+  	
   } else {
+  	#Si ya existe el directorio de trabajo, sólo se asigna para trabajar sobre él
   	setwd(wd)
-  	print("Se ha establecido el directorio de trabajo correctamente.")
   }
 #Validar si existe la carpeta de descargas donde se guardarán los archivos comprimidos
 if( !dir.exists(Descargas) ) {
+	#Se crea la carpeta de descargas para archivos .gz
 	dir.create(file.path(Descargas), recursive=TRUE) 
-    print("Se ha creado la carpeta de descargas para los archivos .GZ")
-  } else {
-  	print("La carpeta de descargas ya existe!")
-  }
+    
+  } 
 #Validar si existe la carpeta de los archivos csv
 if( !dir.exists(Archivos) ) {
+	#Se crea la carpeta donde se guardaran los archivos descomprimidos .csv
 	dir.create(file.path(Archivos), recursive=TRUE) 
-    print("Se ha creado la carpeta de archivos de datos para los archivos .CSV")
- } else {
-  	print("La carpeta de archivos de datos ya existe!")
- }
+ } 
+
+#Se crea un vector con los nombres de los archivos
+FILES = c(file1,file2,file3,file4,file5,file6,file7,file8,file9,file10)
 
 #Validación de la existencia de los archivos en las carpetas locales
-FILES = c(file1,file2,file3,file4,file5,file6,file7,file8,file9,file10)
-fileExt<-""
+
 for( file in FILES ){
   # Se valida si el archivo descompactado ya existe en el área de datos.
   setwd(Archivos)
@@ -54,22 +70,32 @@ for( file in FILES ){
     	print("No existe en la carpeta de archivos")
     	print("Buscando en descargas")
    		setwd(Descargas)
-   		fileExt <- paste(file,extension,sep="")
+   		fileExt <- paste(file,extension,sep="")#arc.gz
    		if( ! file.exists( fileExt ) && !fileExt=="") {
-	    # Si no existe se busca el archivo compactado en el área de descarga.
-	    	print("No existe en la carpeta de Descargas")
-	    	print("Hay que descargar el archivo:")
-	   		fileLink <- paste(rutaDescarga,fileExt,sep="")
-	   		print(fileLink)
+	    # Si no existe en ela carpeta de Descargas, se procede a descargar el archivo
+	   		fileLink <- paste(rutaDescarga,fileExt,sep="") 
+	   		rutaGunzip<-paste(Descargas,fileExt,sep="") 
+	   		rutaArchivoDescargado <- paste(Descargas,fileExt,sep="") 
+	   		 download.file(fileLink,rutaArchivoDescargado)
+	   		 #Al finalizar el ciclo se descomprimen todos los archivos descargados
+	   		 archivosParaDescomprimir<-TRUE
 	    } else {
-		   	 print("si existe el archivo en la carpeta de descargas")
-		   	 print(fileExt)
+		   	 #Existe el archivo en la carpeta de descargas, solo se descomprime en 'Archivos'
 		   	 setwd(Descargas)
-		   	 print("Se descomprime el archivo")
-		   	 gzfile(fileExt)
+		   	 rutaGunzip<-paste(Archivos,file,sep="")
+		   	 gunzip(fileExt,rutaGunzip,overwrite = FALSE)
+
 	   }
-   } else {
-   	 print("si existe el archivo en la carpeta de archivos")
-   	 print(file)
-   }
+   } 
 }
+
+if(archivosParaDescomprimir){
+	setwd(Descargas)
+	for( file in FILES ){
+		fileExt<- paste(file,extension,sep="")
+		rutaGunzip<-paste(Archivos,file,sep="")
+		gunzip(fileExt,rutaGunzip,overwrite = FALSE)
+	}
+}
+#Se empieza a trabajar con los datos obtenidos
+setwd(Archivos)
