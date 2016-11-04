@@ -1,16 +1,20 @@
-system("defaults write org.R-project.R force.LANG en_US.UTF-8")
+#Creado por: Juan Hernández Sánchez
+#Fecha: 03/11/2016
+#Materia: Almacenamiento de datos y su administración
 
-#Para MAC: /Users/DirectorioDeTrabajo
-#Para Windows: C:/Users/juan.hernandez/DirectorioDeTrabajo
+system("defaults write org.R-project.R force.LANG en_US.UTF-8")
+#El directorio de trabajo debe ser cambiado dependiendo del sistema operativo:
+#MAC: /Users/DirectorioDeTrabajo
+#Windows: C:/DirectorioDeTrabajo
 
 packUtils<-"utils"
 packRutils<-"R.utils"
 
 #Declaración de constantes
 PACKAGES<-c(packUtils,packRutils)
-wd <- "C:/Users/juan.hernandez/DirectorioDeTrabajo"
-Descargas <- "C:/Users/juan.hernandez/DirectorioDeTrabajo/Descargas/"
-Archivos <- "C:/Users/juan.hernandez/DirectorioDeTrabajo/Archivos/"
+wd <- "C:/DirectorioDeTrabajo"
+Descargas <- "C:/DirectorioDeTrabajo/Descargas/"
+Archivos <- "C:/DirectorioDeTrabajo/Archivos/"
 extension=".gz"
 rutaDescarga="http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/"
 file1="StormEvents_fatalities-ftp_v1.0_d1985_c20160223.csv"
@@ -67,8 +71,8 @@ for( file in FILES ){
   setwd(Archivos)
    if( ! file.exists( file )) {
     # Si no existe se busca el archivo compactado en el área de descarga.
-    	print("No existe en la carpeta de archivos")
-    	print("Buscando en descargas")
+    	#No existe en la carpeta de archivos
+    	#Buscando en descargas
    		setwd(Descargas)
    		fileExt <- paste(file,extension,sep="")#arc.gz
    		if( ! file.exists( fileExt ) && !fileExt=="") {
@@ -84,7 +88,6 @@ for( file in FILES ){
 		   	 setwd(Descargas)
 		   	 rutaGunzip<-paste(Archivos,file,sep="")
 		   	 gunzip(fileExt,rutaGunzip,overwrite = FALSE)
-
 	   }
    } 
 }
@@ -99,3 +102,24 @@ if(archivosParaDescomprimir){
 }
 #Se empieza a trabajar con los datos obtenidos
 setwd(Archivos)
+#######################
+#A continuación se presenta la cantidad de registros por cada archivo:
+for( file in FILES ){
+	print(nrow(read.csv(file, header = TRUE, sep = ",")))
+}
+#######################
+
+#Se juntan todos los archivos csv en la variable Fatalities
+for( file in FILES ){
+    if( !exists("Fatalities" ) ) {
+        Fatalities<-read.csv( file, header=T, sep=",", na.strings="")
+    } else {
+        data<-read.csv(file, header=T, sep=",", na.strings="")
+        Fatalities<-rbind(Fatalities,data)
+    }
+}
+#Tomando en cuenta todos los archivos, el numero total de registros es:
+nrow(Fatalities)
+#Se eliminan los temporales
+rm(Fatalities)
+rm(data)
