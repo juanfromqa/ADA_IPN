@@ -6,15 +6,19 @@ system("defaults write org.R-project.R force.LANG en_US.UTF-8")
 #El directorio de trabajo debe ser cambiado dependiendo del sistema operativo:
 #MAC: /Users/DirectorioDeTrabajo
 #Windows: C:/DirectorioDeTrabajo
+#Para ejecutar el siguiente código, es necesario contar con privilegios de administrador
+#para entornos Windows es suficiente con ejecutar el programa R con permisos de administrador
+#para entornos Unix como es el caso de Mac, se debe ejecutar el siguiente comando: sudo chmod -R 777 /Users  
+#en una terminal e ingresar la contraseña del usuario administrador.
 
 packUtils<-"utils"
 packRutils<-"R.utils"
 
 #Declaración de constantes
 PACKAGES<-c(packUtils,packRutils)
-wd <- "C:/DirectorioDeTrabajo"
-Descargas <- "C:/DirectorioDeTrabajo/Descargas/"
-Archivos <- "C:/DirectorioDeTrabajo/Archivos/"
+wd <- "/Users/DirectorioDeTrabajo"
+Descargas <- "/Users/DirectorioDeTrabajo/Descargas/"
+Archivos <- "/Users/DirectorioDeTrabajo/Archivos/"
 extension=".gz"
 rutaDescarga="http://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/"
 file1="StormEvents_fatalities-ftp_v1.0_d1985_c20160223.csv"
@@ -35,7 +39,7 @@ archivosParaDescomprimir<-FALSE
 for (package in PACKAGES ) {
   if (!require(package, character.only=T, quietly=T)) {
      install.packages(package, repos="https://cran.itam.mx/")
-     library(package)
+     library(package, character.only=T)
   }
   }
 
@@ -87,7 +91,7 @@ for( file in FILES ){
          #Existe el archivo en la carpeta de descargas, solo se descomprime en 'Archivos'
          setwd(Descargas)
          rutaGunzip<-paste(Archivos,file,sep="")
-         gunzip(fileExt,rutaGunzip,overwrite = FALSE)
+         gunzip(fileExt,rutaGunzip,overwrite = FALSE, remove=FALSE)
      }
    } 
 }
@@ -97,7 +101,7 @@ if(archivosParaDescomprimir){
   for( file in FILES ){
     fileExt<- paste(file,extension,sep="")
     rutaGunzip<-paste(Archivos,file,sep="")
-    gunzip(fileExt,rutaGunzip,overwrite = FALSE)
+    gunzip(fileExt,rutaGunzip,overwrite = FALSE, remove=FALSE)
   }
 }
 #Se empieza a trabajar con los datos obtenidos
@@ -109,7 +113,7 @@ for( file in FILES ){
 }
 #######################
 
-#Se juntan todos los archivos csv en la variable Fatalities
+#Se juntan todos los archivos csv en 'Fatalities'
 for( file in FILES ){
     if( !exists("Fatalities" ) ) {
         Fatalities<-read.csv( file, header=T, sep=",", na.strings="")
